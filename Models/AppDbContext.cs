@@ -19,6 +19,8 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<TaskMaster> TaskMasters { get; set; }
 
+    public virtual DbSet<TaskProgress> TaskProgresses { get; set; }
+
     public virtual DbSet<UserMaster> UserMasters { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -70,6 +72,20 @@ public partial class AppDbContext : DbContext
                 .HasMaxLength(50)
                 .HasColumnName("task_status");
             entity.Property(e => e.TaskTargetdate).HasColumnName("task_targetdate");
+        });
+
+        modelBuilder.Entity<TaskProgress>(entity =>
+        {
+            entity.HasKey(e => new { e.TaskId, e.SubTaskId, e.ProgressDatetime }).HasName("task_progress_pkey");
+
+            entity.ToTable("task_progress");
+
+            entity.Property(e => e.TaskId).HasColumnName("task_id");
+            entity.Property(e => e.SubTaskId).HasColumnName("sub_task_id");
+            entity.Property(e => e.ProgressDatetime).HasColumnName("progress_datetime");
+            entity.Property(e => e.PercentageOfCompletion)
+                .HasPrecision(5, 2)
+                .HasColumnName("percentage_of_completion");
         });
 
         modelBuilder.Entity<UserMaster>(entity =>

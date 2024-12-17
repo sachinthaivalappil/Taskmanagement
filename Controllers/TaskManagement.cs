@@ -156,6 +156,21 @@ namespace MvcApp.Controllers
             {
                 return BadRequest("Invalid task assignment data.");
             }
+            var userExists = await _context.UserMasters
+            .AnyAsync(user => user.UserId == request.AssignedTo);
+
+            if (!userExists)
+            {
+                return NotFound($"AssignedTo User ID {request.AssignedTo} does not exist.");
+            }
+            var inProgressTaskExists = await _context.TaskMasters
+                .AnyAsync(task => task.AssignedTo == request.AssignedTo && task.TaskStatus == "Inprogress");
+
+            if (inProgressTaskExists)
+            {
+                return BadRequest($"User with ID {request.AssignedTo} already has an in-progress task.");
+            }
+
 
             var task = new TaskMaster
             {
@@ -196,7 +211,82 @@ namespace MvcApp.Controllers
 
             return task;
         }
-    
+
+
+    [HttpPost("update-task")]
+        public async Task<IActionResult> UpdateTask([FromBody] UpdateTaskProgressRequest request)
+        {
+            if (request == null)
+            {
+                return BadRequest("Invalid request payload.");
+            }
+
+            // Validate the percentage value
+            if (request.Percentage < 0 || request.Percentage > 100)
+            {
+                return BadRequest("Percentage of completion must be between 0 and 100.");
+            }
+
+            // Fetch the task assigned to the user
+            var task = await _context.TaskMasters
+                .FirstOrDefaultAsync(t => t.AssignedTo == request.UserId); // Ensure UserId is compared as a string
+
+            if (task == null)
+            {
+                return NotFound($"No task assigned to user with ID {request.UserId}.");
+            }
+
+            // Check if the new percentage is greater than or equal to the current percentage
+            if (request.Percentage < task.TaskProgress)
+            {
+                return BadRequest($"New percentage ({request.Percentage}) cannot be lower than the current percentage ({task.TaskProgress}).");
+            }
+            int Percentage_of_completion = int.Parse(request.Percentage.ToString());
+            // Update the task progress
+            task.TaskProgress = Percentage_of_completion;
+
+            // Fetch the latest sub_task_id for the given task_id
+            var latestSubTask = await _context.TaskProgresses
+                .Where(tp => tp.TaskId == task.TaskId) // Use TaskId, not the whole task object
+                .OrderByDescending(tp => tp.SubTaskId)
+                .FirstOrDefaultAsync();
+
+            // Increment or initialize the sub_task_id
+            int newSubTaskId = latestSubTask != null ? latestSubTask.SubTaskId + 1 : 1;
+
+            // Insert the new sub-task entry
+            var newTaskProgress = new TaskProgress
+            {
+                TaskId = task.TaskId,
+                SubTaskId = newSubTaskId,
+                ProgressDatetime = DateTime.UtcNow, // Current UTC time
+                PercentageOfCompletion = request.Percentage
+            };
+
+            // Add the new sub-task entry to the TaskProgresses table
+            _context.TaskProgresses.Add(newTaskProgress);
+
+            try
+            {
+                // Save changes to the database
+                await _context.SaveChangesAsync();
+
+                // Return success response
+                return Ok(new
+                {
+                    Message = "Task progress updated successfully.",
+                    TaskId = newTaskProgress.TaskId,
+                    SubTaskId = newTaskProgress.SubTaskId,
+                    PercentageOfCompletion = newTaskProgress.PercentageOfCompletion
+                });
+            }
+            catch (Exception ex)
+            {
+                // Handle any internal server error
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+}
+
     }
 
 }
@@ -222,4 +312,9 @@ public class TaskAssignmentRequest
     public int AssignedBy { get; set; }
     public DateOnly DateOfAssignment { get; set; }
     public DateOnly TaskTargetDate { get; set; }
+}
+public class UpdateTaskProgressRequest
+{
+    public int UserId { get; set; }       // User making the request
+    public decimal Percentage { get; set; } // New percentage to update
 }
