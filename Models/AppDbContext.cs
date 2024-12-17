@@ -53,12 +53,8 @@ public partial class AppDbContext : DbContext
             entity.ToTable("task_master");
 
             entity.Property(e => e.TaskId).HasColumnName("task_id");
-            entity.Property(e => e.AssignedBy)
-                .HasMaxLength(100)
-                .HasColumnName("assigned_by");
-            entity.Property(e => e.AssignedTo)
-                .HasMaxLength(100)
-                .HasColumnName("assigned_to");
+            entity.Property(e => e.AssignedBy).HasColumnName("assigned_by");
+            entity.Property(e => e.AssignedTo).HasColumnName("assigned_to");
             entity.Property(e => e.DateOfAssignment).HasColumnName("date_of_assignment");
             entity.Property(e => e.Department)
                 .HasMaxLength(50)
@@ -69,9 +65,10 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.TaskName)
                 .HasMaxLength(100)
                 .HasColumnName("task_name");
-            entity.Property(e => e.TaskProgress)
+            entity.Property(e => e.TaskProgress).HasColumnName("task_progress");
+            entity.Property(e => e.TaskStatus)
                 .HasMaxLength(50)
-                .HasColumnName("task_progress");
+                .HasColumnName("task_status");
             entity.Property(e => e.TaskTargetdate).HasColumnName("task_targetdate");
         });
 

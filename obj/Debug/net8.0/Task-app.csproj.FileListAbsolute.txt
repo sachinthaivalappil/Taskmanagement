@@ -175,3 +175,4 @@
 /Users/sachints/Desktop/projects/madhavan project/task management backend/Task-app/bin/Debug/net8.0/Swashbuckle.AspNetCore.SwaggerGen.dll
 /Users/sachints/Desktop/projects/madhavan project/task management backend/Task-app/bin/Debug/net8.0/Swashbuckle.AspNetCore.SwaggerUI.dll
 /Users/sachints/Desktop/projects/madhavan project/task management backend/Task-app/obj/Debug/net8.0/Task-app.MvcApplicationPartsAssemblyInfo.cs
+/Users/sachints/Desktop/projects/madhavan project/task management backend/Task-app/obj/Debug/net8.0/Task-app.sourcelink.json

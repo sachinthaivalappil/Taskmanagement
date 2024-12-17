@@ -13,13 +13,15 @@ public partial class TaskMaster
 
     public string? Department { get; set; }
 
-    public string? AssignedBy { get; set; }
+    public int? AssignedBy { get; set; }
 
-    public string? AssignedTo { get; set; }
+    public int? AssignedTo { get; set; }
 
     public DateOnly? DateOfAssignment { get; set; }
 
-    public string? TaskProgress { get; set; }
+    public int? TaskProgress { get; set; }
 
     public DateOnly? TaskTargetdate { get; set; }
+
+    public string? TaskStatus { get; set; }
 }
